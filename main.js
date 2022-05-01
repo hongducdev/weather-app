@@ -106,9 +106,9 @@ getLocation();
 
 //tro ly ao
 
-var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
+// var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
 
-const recognition = new SpeechRecognition();
+var recognition = new webkitSpeechRecognition() || new SpeechRecognition();
 const synth = window.speechSynthesis;
 recognition.lang = 'vi-VI';
 recognition.continuous = false;
@@ -134,27 +134,25 @@ const speak = (text) => {
 };
 
 const handleVoice = (text) => {
-  console.log('text', text);
+  console.log( text);
 
   // "thời tiết tại Đà Nẵng" => ["thời tiết tại", "Đà Nẵng"]
   const handledText = text.toLowerCase();
+
   if (handledText.includes('thời tiết tại')) {
       const location = handledText.split('tại')[1].trim();
 
       console.log('location', location);
-      searchInput.value = location;
+      input.value = location;
       const changeEvent = new Event('change');
-      searchInput.dispatchEvent(changeEvent);
+      input.dispatchEvent(changeEvent);
       return;
+  } else {
+    input.value = handledText;
+    const changeEvent = new Event('change');
+    input.dispatchEvent(changeEvent);
+    return;
   }
-
-  if (handledText.includes('mấy giờ')) {
-      const textToSpeech = `${moment().hours()} hours ${moment().minutes()} minutes`;
-      speak(textToSpeech);
-      return;
-  }
-
-  speak('Try again');
 }
 
 microphone.addEventListener('click', (e) => {
@@ -177,8 +175,12 @@ recognition.onerror = (err) => {
   record.style.display = 'none';
 }
 
+recognition.onerror = function(event) {
+  console.log('Speech recognition error detected: ' + event.error);
+}
+
 recognition.onresult = (e) => {
   console.log('onresult', e);
   const text = e.results[0][0].transcript;
-  handledVoice(text);
+  handleVoice(text);
 }
